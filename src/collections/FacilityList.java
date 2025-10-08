@@ -48,7 +48,7 @@ public class FacilityList {
                 }
 
                 String[] p = line.split(",");
-                if (p.length < 7) {
+                if (p.length < 8) {
                     continue;
                 }
 
@@ -58,15 +58,16 @@ public class FacilityList {
                     String type = p[2].trim();
                     String loc = p[3].trim();
                     int cap = Integer.parseInt(p[4].trim());
-                    LocalDateTime start = LocalDateTime.parse(p[5].trim(), TS);
-                    LocalDateTime end = LocalDateTime.parse(p[6].trim(), TS);
+                    int price = Integer.parseInt(p[5].trim());
+                    LocalDateTime start = LocalDateTime.parse(p[6].trim(), TS);
+                    LocalDateTime end = LocalDateTime.parse(p[7].trim(), TS);
 
                     String nameKey = name.toLowerCase();
                     if (cap <= 0 || nameKey.length() == 0 || nameSet.contains(nameKey)) {
                         continue;
                     }
 
-                    facilities.add(new Facility(id, name, type, loc, cap, start, end));
+                    facilities.add(new Facility(id, name, type, loc, cap, price, start, end));
                     nameSet.add(nameKey);
                     count++;
                 } catch (Exception ignored) {
@@ -121,17 +122,17 @@ public class FacilityList {
     // Sub-function: Show all facilities
     private static void showAll(List<Facility> list) {
         System.out.println("Facilities & Services List");
-        System.out.printf("%-19s | %-12s | %-19s | %8s | %s\n",
-                "Facility Name", "Type", "Location", "Capacity", "Availability");
-        System.out.println("-------------------+--------------+-------------------+----------+--------------------------");
+        System.out.printf("%-19s | %-15s | %-24s | %8s | %8s |%s\n",
+                "Facility Name", "Type", "Location", "Capacity", "Price", "Availability");
+        System.out.println("--------------------+-----------------+--------------------------+----------+----------+--------------------------------------");
 
         for (Facility f : list) {
             String avail = "";
             if (f.getStart() != null && f.getEnd() != null) {
                 avail = f.getStart().format(TS) + " - " + f.getEnd().format(TS);
             }
-            System.out.printf("%-19s | %-12s | %-19s | %8d | %s\n",
-                    f.getName(), f.getType(), f.getLocation(), f.getCapacity(), avail);
+            System.out.printf("%-19s | %-15s | %-24s | %8d | %8s |%s\n",
+                    f.getName(), f.getType(), f.getLocation(), f.getCapacity(), f.getPricePerHour(), avail);
         }
     }
 

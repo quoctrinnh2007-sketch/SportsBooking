@@ -127,18 +127,18 @@ public class BookingList {
     // Sub-function: Display bookings table
     // ➜ Hàm hiển thị danh sách booking (dùng trong Func 5)
     private void showDetails(LocalDate target, List<Booking> list) {
-        System.out.println("----------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------------");
         System.out.println("Bookings on " + target);
-        System.out.println("----------------------------------------------------------------");
-        System.out.println(String.format(" %-5s| %-18s | %-18s | %-9s",
+        System.out.println("----------------------------------------------------------------------");
+        System.out.println(String.format(" %-5s| %-25s | %-18s | %-9s",
                 "Time", "Facility", "User", "Duration"));
-        System.out.println("----------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------------");
         for (Booking b : list) {
             String time = fmtTime(b.getTime()); // dùng lại hàm fmtTime()
-            System.out.println(String.format(" %-5s| %-18s | %-18s | %9d",
+            System.out.println(String.format(" %-5s| %-25s | %-18s | %9d ",
                     time, b.getFacility(), b.getPlayer(), b.getDuration()));
         }
-        System.out.println("----------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------------");
     }
 
     // Sub-function: Display booking information (used in Func 6)
@@ -236,13 +236,10 @@ public class BookingList {
     }
 
 // =====================================================
-// Func 7 - Monthly Revenue Report
-// ➜ Tổng hợp doanh thu theo THÁNG/NĂM; hiển thị bảng No. | Facility | Amount
-//    Gộp THEO LOẠI facility (Badminton/Football/).
-//    Nếu không có dữ liệu: in "No data available in the Monthly Revenue Report".
+// Func 7 - Monthly Revenue Report (group by Facility TYPE, dùng Price từ CSV)
 // =====================================================
     public void monthlyRevenue(int month, int year) {
-        Map<String, Integer> sumByType = new LinkedHashMap<String, Integer>();
+        Map<String, Integer> sumByType = new LinkedHashMap<>();
         List<Booking> all = bookingDAO.getAll();
 
         for (Booking b : all) {
@@ -255,46 +252,32 @@ public class BookingList {
 
             Facility f = FacilityList.findByIdOrName(b.getFacility());
             String type = (f == null) ? "Unknown" : f.getType();
-
-            int rate;
-            if (type.equalsIgnoreCase("Badminton")) {
-                rate = 100000;
-            } else if (type.equalsIgnoreCase("Football Field")) {
-                rate = 125000;
-            } else if (type.equalsIgnoreCase("Table tennis")) {
-                rate = 350000;
-            } else if (type.equalsIgnoreCase("Swimming Pool")) {
-                rate = 150000;
-            } else {
-                rate = 100000; // mặc định nếu không khớp loại
-            }
-
+            int rate = (f == null) ? 0 : f.getPricePerHour();   // lấy giá/giờ từ CSV
             int money = rate * b.getDuration();
+
             sumByType.put(type, sumByType.getOrDefault(type, 0) + money);
         }
+
         printMonthlyRevenue(month, year, sumByType);
     }
 
-    // Sub-function: Print Monthly Revenue Table
     private void printMonthlyRevenue(int month, int year, Map<String, Integer> data) {
         if (data == null || data.isEmpty()) {
             System.out.println("No data available in the Monthly Revenue Report");
             return;
         }
-
         System.out.println("Monthly Revenue Report - '" + String.format("%02d/%d", month, year) + "'");
         System.out.println("-------------------------------------");
-        System.out.printf("%-4s | %-15s | %s\n", "No.", "Facility", "Amount");
+        System.out.printf("%-4s | %-15s | %s%n", "No.", "Facility", "Amount");
         System.out.println("-------------------------------------");
 
         int no = 1, total = 0;
         for (Map.Entry<String, Integer> e : data.entrySet()) {
-            System.out.printf("%-4d | %-15s | %10d\n", no++, e.getKey(), e.getValue());
+            System.out.printf("%-4d | %-15s | %10d%n", no++, e.getKey(), e.getValue());
             total += e.getValue();
         }
-
         System.out.println("-------------------------------------");
-        System.out.printf("%-22s %12d\n", "Total", total);
+        System.out.printf("%-22s %12d%n", "Total", total);
         System.out.println("-------------------------------------");
     }
 

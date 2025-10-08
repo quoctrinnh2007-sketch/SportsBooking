@@ -1,0 +1,9 @@
+BK1759809852588,Phu Quoc,Mini Football Field,2025-10-10,17:00,3,false
+BK1759809884797,Dang Khoa,Badminton Court 1,2025-10-10,10:00,2,false
+BK1759809918125,Jeam,Badminton Court 1,2025-10-10,13:00,4,false
+BK1759810679881,Ronaldo,Tennis Court 2,2025-10-13,09:00,3,false
+BK1759810728786,Messi,Adult Swimming Pool,2025-10-11,07:00,2,false
+BK1759810758897,Fuju,Adult Swimming Pool,2025-10-11,09:00,3,false
+BK1759810791876,Rumi,Tennis Court 1,2025-10-12,08:00,4,false
+BK1759810810926,Rum,Tennis Court 1,2025-10-12,15:00,3,false
+BK1759810850486,Eto,Table Tennis Area 1,2025-10-13,17:00,5,true

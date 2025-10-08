@@ -10,18 +10,28 @@ public class Facility implements Serializable {
     private String type;
     private String location;
     private int capacity;
+    private int pricePerHour;
     private LocalDateTime start;
     private LocalDateTime end;
 
     public Facility(String id, String name, String type, String location,
-            int capacity, LocalDateTime start, LocalDateTime end) {
+            int capacity, int pricePerHour, LocalDateTime start, LocalDateTime end) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.location = location;
         this.capacity = capacity;
+        this.pricePerHour = Math.max(0, pricePerHour);
         this.start = start;
         this.end = end;
+    }
+
+    public int getPricePerHour() {
+        return pricePerHour;
+    }
+
+    public void setPricePerHour(int pricePerHour) {
+        this.pricePerHour = Math.max(0, pricePerHour);
     }
 
     public String getId() {

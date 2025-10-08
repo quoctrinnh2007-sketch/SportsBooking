@@ -19,7 +19,6 @@ public class Menu {
         items.put(8, "Service Usage Statistics");
         items.put(9, "Save All Data");
         items.put(10, "Quit");
-        items.put(0, "Exit Program (Force)");
     }
 
     public static int showMainMenu() {

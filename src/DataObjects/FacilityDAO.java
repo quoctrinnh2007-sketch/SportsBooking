@@ -15,14 +15,15 @@ public class FacilityDAO {
         List<String> lines = FileManager.readAllLines(path);
         for (int i = 1; i < lines.size(); i++) { // bỏ header
             String[] p = lines.get(i).split(",");
-            if (p.length < 7) {
+            if (p.length < 8) {
                 continue;
             }
             try {
                 Facility f = new Facility(p[0], p[1], p[2], p[3],
                         Integer.parseInt(p[4]),
-                        LocalDateTime.parse(p[5], FMT),
-                        LocalDateTime.parse(p[6], FMT));
+                        Integer.parseInt(p[5].trim()),
+                        LocalDateTime.parse(p[6], FMT),
+                        LocalDateTime.parse(p[7], FMT));
                 list.add(f);
             } catch (Exception ignored) {
             }

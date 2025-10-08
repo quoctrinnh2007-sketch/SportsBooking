@@ -100,11 +100,6 @@ public class Main {
                     running = false;
                     break;
 
-                case 0:
-                    System.out.println("Force exit program!");
-                    running = false;
-                    break;
-
                 default:
                     System.out.println("Invalid choice! Please enter 0–10.");
                     break;
