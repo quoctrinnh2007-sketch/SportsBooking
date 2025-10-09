@@ -40,39 +40,84 @@ public class BookingList {
         return s.length() >= 5 ? s.substring(0, 5) : s;
     }
 
-    // =====================================================
-    // Func 4 - Book a facility
-    // ➜ Đặt sân/dịch vụ: kiểm tra facility, tạo ID, thêm vào danh sách booking.
-    // =====================================================
-    public String book(String player, String facilityName, LocalDate date, LocalTime time, int hours) {
-        if (player == null || player.trim().length() < 2
-                || player.trim().length() > 18) {
-            return "Player name must be 2..18 characters.";
-        }
-        if (hours < 1 || hours > 5) {
-            return "Duration must be 1..5 hours.";
-        }
-
-        Facility f = FacilityList.findByIdOrName(facilityName);
-        if (f == null) {
-            return "Facility not found.";
+// =====================================================
+// Func 4 - Book a Facility / Service
+// =====================================================
+    public void booking(Scanner sc) {
+        String player;
+        while (true) {
+            System.out.print("Enter player name (2-18 chars): ");
+            player = sc.nextLine().trim();
+            if (player.length() >= 2 && player.length() <= 18) {
+                break;
+            }
+            System.out.println("Invalid name! Must be 2–18 characters. Please try again.");
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        Facility f;
+        while (true) {
+            System.out.print("Enter facility name: ");
+            String fname = sc.nextLine().trim();
+            f = FacilityList.findByIdOrName(fname);
+            if (f != null) {
+                break;
+            }
+            System.out.println("Facility not found. Please enter again.");
+        }
+
+        LocalDate date = null;
+        while (true) {
+            System.out.print("Enter booking date (yyyy-MM-dd): ");
+            try {
+                date = LocalDate.parse(sc.nextLine().trim());
+                break;
+            } catch (Exception e) {
+                System.out.println("Invalid date format. Please use yyyy-MM-dd.");
+            }
+        }
+
+        LocalTime time = null;
+        while (true) {
+            System.out.print("Enter start time (HH:mm): ");
+            try {
+                time = LocalTime.parse(sc.nextLine().trim());
+                break;
+            } catch (Exception e) {
+                System.out.println("Invalid time format. Please use HH:mm.");
+            }
+        }
+
+        int hours = 0;
+        while (true) {
+            System.out.print("Enter number of hours (1–5): ");
+            try {
+                hours = Integer.parseInt(sc.nextLine().trim());
+                if (hours >= 1 && hours <= 5) {
+                    break;
+                }
+                System.out.println("Duration must be between 1 and 5 hours.");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number format! Please enter an integer 1–5.");
+            }
+        }
+
+        // Kiểm tra logic đặt sân
         LocalDateTime reqStart = LocalDateTime.of(date, time);
         LocalDateTime reqEnd = reqStart.plusHours(hours);
+        LocalDateTime now = LocalDateTime.now();
 
         if (reqStart.isBefore(now)) {
-            return "Cannot book a past time.";
+            System.out.println("Cannot book a past time.");
+            return;
         }
-        if (reqStart.isBefore(f.getStart()) || reqEnd.isAfter(f.getEnd())) {
-            return "Selected time does not match an available slot.";
+        if (f.getStart() == null || f.getEnd() == null
+                || reqStart.isBefore(f.getStart()) || reqEnd.isAfter(f.getEnd())) {
+            System.out.println("Selected time is not within facility availability.");
+            return;
         }
 
-        // chống trùng lịch cùng facility (bỏ qua đã hủy)
-        List<Booking> all = bookingDAO.getAll();
-        for (int i = 0; i < all.size(); i++) {
-            Booking b = all.get(i);
+        // Chống trùng lịch
+        for (Booking b : bookingDAO.getAll()) {
             if (b.isCanceled()) {
                 continue;
             }
@@ -81,15 +126,18 @@ public class BookingList {
             }
             LocalDateTime s = LocalDateTime.of(b.getDate(), b.getTime());
             LocalDateTime e = s.plusHours(b.getDuration());
-            if (overlaps(reqStart, reqEnd, s, e)) {
-                return "Time slot overlaps with an existing booking.";
+            if (reqStart.isBefore(e) && reqEnd.isAfter(s)) {
+                System.out.println("Time slot overlaps with an existing booking.");
+                return;
             }
         }
-        String id = newId();
-        bookingDAO.add(new Booking(id, player.trim(), f.getName(), date, time, hours));
-        // theo đề Func 4: “Validate data and save to file” – dùng text (DAO.save())
+
+        String id = "BK" + System.currentTimeMillis();
+        bookingDAO.add(new Booking(id, player, f.getName(), date, time, hours));
         bookingDAO.save();
-        return id;
+
+        System.out.println("Booking created successfully.");
+        System.out.println("Your Booking ID: " + id);
     }
 
     // =====================================================

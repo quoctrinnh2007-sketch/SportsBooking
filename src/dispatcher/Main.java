@@ -32,33 +32,14 @@ public class Main {
                     break;
 
                 case 2:
-                    System.out.print("Enter facility ID or name to update: ");
-                    String key = sc.nextLine().trim();
-                    System.out.print("Enter new location (- to skip): ");
-                    String newLoc = sc.nextLine().trim();
-                    System.out.print("Enter new capacity (0 to skip): ");
-                    int cap = Integer.parseInt(sc.nextLine());
-                    boolean ok = FacilityList.update(key, newLoc, cap, null, null);
-                    System.out.println(ok ? "Updated successfully!" : "Facility not found.");
+                    FacilityList.update(sc);
                     break;
-
                 case 3:
                     FacilityList.printAll();
                     break;
 
                 case 4:
-                    System.out.print("Enter player name: ");
-                    String player = sc.nextLine().trim();
-                    System.out.print("Enter facility name: ");
-                    String fname = sc.nextLine().trim();
-                    System.out.print("Enter booking date (yyyy-MM-dd): ");
-                    LocalDate d = LocalDate.parse(sc.nextLine().trim());
-                    System.out.print("Enter start time (HH:mm): ");
-                    java.time.LocalTime t = java.time.LocalTime.parse(sc.nextLine().trim());
-                    System.out.print("Enter number of hours: ");
-                    int h = Integer.parseInt(sc.nextLine().trim());
-                    String result = bookingList.book(player, fname, d, t, h);
-                    System.out.println(result);
+                    bookingList.booking(sc);
                     break;
 
                 case 5:

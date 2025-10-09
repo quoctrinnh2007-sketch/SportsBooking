@@ -28,7 +28,7 @@ public class BookingDAO {
         if (id == null) {
             return null;
         }
-        for (Booking b : list) {
+        for (Booking b : list) {    
             if (id.equals(b.getId())) {
                 return b;
             }
@@ -37,6 +37,8 @@ public class BookingDAO {
     }
 
     public void save() {
+        list.sort(Comparator.comparing(Booking::getDate)
+                            .thenComparing(Booking::getTime));
         List<String> lines = new ArrayList<>(list.size());
         for (Booking b : list) {
             lines.add(b.toCSV());

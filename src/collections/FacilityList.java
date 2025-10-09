@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  *
@@ -80,33 +81,76 @@ public class FacilityList {
     }
 
     //Func 2:
-    public static boolean update(String key, String newLoc, int newCap,
-            LocalDateTime start, LocalDateTime end) {
+    public static boolean update(Scanner sc) {
+        System.out.print("Enter facility ID or name to update: ");
+        String key = sc.nextLine().trim();
+
         Facility f = findByIdOrName(key);
         if (f == null) {
+            System.out.println("No Facility or Service found in database!");
             return false;
         }
 
-        if (newLoc != null && !newLoc.trim().equals("-")) {
-            f.setLocation(newLoc.trim());
-        }
-        if (newCap > 0) {
-            f.setCapacity(newCap);
+        DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        System.out.printf("Current -> loc=%s | cap=%d | start=%s | end=%s%n",
+                f.getLocation(),
+                f.getCapacity(),
+                f.getStart() == null ? "-" : f.getStart().format(TS),
+                f.getEnd() == null ? "-" : f.getEnd().format(TS));
+
+        System.out.print("New location [- to keep]: ");
+        String newLoc = sc.nextLine().trim();
+        if (!newLoc.equals("-") && !newLoc.isEmpty()) {
+            f.setLocation(newLoc);
         }
 
-        if (start != null && end != null) {
-            if (!end.isBefore(start)) { // end >= start
-                f.setStart(start);
-                f.setEnd(end);
+        System.out.print("New capacity [0 to keep]: ");
+        int newCap = 0;
+        try {
+            String capIn = sc.nextLine().trim();
+            newCap = capIn.isEmpty() ? 0 : Integer.parseInt(capIn);
+            if (newCap < 0) {
+                System.out.println("Invalid capacity!");
+                return false;
             }
-        } else {
-            if (start != null) {
-                f.setStart(start);
+            if (newCap > 0) {
+                f.setCapacity(newCap);
             }
-            if (end != null && (f.getStart() == null || !end.isBefore(f.getStart()))) {
-                f.setEnd(end);
-            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid capacity format!");
+            return false;
         }
+
+        System.out.print("New start (yyyy-MM-dd HH:mm) [blank to keep]: ");
+        String s1 = sc.nextLine().trim();
+        System.out.print("New end   (yyyy-MM-dd HH:mm) [blank to keep]: ");
+        String s2 = sc.nextLine().trim();
+
+        LocalDateTime start = null, end = null;
+        try {
+            if (!s1.isEmpty()) {
+                start = LocalDateTime.parse(s1, TS);
+            }
+            if (!s2.isEmpty()) {
+                end = LocalDateTime.parse(s2, TS);
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid datetime format!");
+            return false;
+        }
+
+        if (start != null && end != null && end.isBefore(start)) {
+            System.out.println("Invalid schedule range (end < start)!");
+            return false;
+        }
+        if (start != null) {
+            f.setStart(start);
+        }
+        if (end != null) {
+            f.setEnd(end);
+        }
+
+        System.out.println("Facility information updated successfully!");
         return true;
     }
 
@@ -150,12 +194,4 @@ public class FacilityList {
         return null;
     }
 
-//    private static boolean containsName(String nameLower) {
-//        for (Facility f : facilities) {
-//            if (f.getName() != null && f.getName().trim().toLowerCase().equals(nameLower)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 }
