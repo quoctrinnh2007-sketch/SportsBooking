@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import utils.Inputter;
 
 /**
  *
@@ -80,10 +81,12 @@ public class FacilityList {
         return count;
     }
 
-    //Func 2:
+// =====================================================
+// Func 2 - Update Facility Information (dùng Inputter)
+// =====================================================
     public static boolean update(Scanner sc) {
-        System.out.print("Enter facility ID or name to update: ");
-        String key = sc.nextLine().trim();
+        String key = Inputter.getString(sc,
+                "Enter facility ID or name to update: ", 1, 100);
 
         Facility f = findByIdOrName(key);
         if (f == null) {
@@ -91,62 +94,48 @@ public class FacilityList {
             return false;
         }
 
-        DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         System.out.printf("Current -> loc=%s | cap=%d | start=%s | end=%s%n",
-                f.getLocation(),
-                f.getCapacity(),
+                f.getLocation(), f.getCapacity(),
                 f.getStart() == null ? "-" : f.getStart().format(TS),
                 f.getEnd() == null ? "-" : f.getEnd().format(TS));
 
-        System.out.print("New location [- to keep]: ");
-        String newLoc = sc.nextLine().trim();
-        if (!newLoc.equals("-") && !newLoc.isEmpty()) {
+        // location: nhập "-" để giữ nguyên -> method trả về null nếu giữ nguyên
+        String newLoc = Inputter.getStringOrKeep(sc,
+                "New location [- to keep]: ", "-");
+        if (newLoc != null && !newLoc.isEmpty()) {
             f.setLocation(newLoc);
         }
 
-        System.out.print("New capacity [0 to keep]: ");
-        int newCap = 0;
-        try {
-            String capIn = sc.nextLine().trim();
-            newCap = capIn.isEmpty() ? 0 : Integer.parseInt(capIn);
-            if (newCap < 0) {
-                System.out.println("Invalid capacity!");
-                return false;
-            }
-            if (newCap > 0) {
-                f.setCapacity(newCap);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid capacity format!");
-            return false;
+        // capacity: nhập 0 để giữ nguyên -> method trả về null nếu 0
+        Integer newCap = Inputter.getIntOrKeepZero(sc,
+                "New capacity [0 to keep]: ", 1, 1000);
+        if (newCap != null) {
+            f.setCapacity(newCap);
         }
 
-        System.out.print("New start (yyyy-MM-dd HH:mm) [blank to keep]: ");
-        String s1 = sc.nextLine().trim();
-        System.out.print("New end   (yyyy-MM-dd HH:mm) [blank to keep]: ");
-        String s2 = sc.nextLine().trim();
+        // start/end: bỏ trống để giữ nguyên -> method trả null nếu bỏ trống
+        LocalDateTime start = Inputter.getOptionalDateTime(sc,
+                "New start (yyyy-MM-dd HH:mm) [blank to keep]: ", "yyyy-MM-dd HH:mm");
+        LocalDateTime end = Inputter.getOptionalDateTime(sc,
+                "New end   (yyyy-MM-dd HH:mm) [blank to keep]: ", "yyyy-MM-dd HH:mm");
 
-        LocalDateTime start = null, end = null;
-        try {
-            if (!s1.isEmpty()) {
-                start = LocalDateTime.parse(s1, TS);
-            }
-            if (!s2.isEmpty()) {
-                end = LocalDateTime.parse(s2, TS);
-            }
-        } catch (Exception e) {
-            System.out.println("Invalid datetime format!");
-            return false;
-        }
-
+        // validate khoảng thời gian
         if (start != null && end != null && end.isBefore(start)) {
             System.out.println("Invalid schedule range (end < start)!");
             return false;
         }
         if (start != null) {
+            if (f.getEnd() != null && f.getEnd().isBefore(start)) {
+                System.out.println("Invalid: start is after current end!");
+                return false;
+            }
             f.setStart(start);
         }
         if (end != null) {
+            if (f.getStart() != null && end.isBefore(f.getStart())) {
+                System.out.println("Invalid: end is before current start!");
+                return false;
+            }
             f.setEnd(end);
         }
 

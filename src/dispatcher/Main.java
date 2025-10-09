@@ -13,7 +13,6 @@ public class Main {
         Scanner sc = new Scanner(System.in);
 
         // Load dữ liệu ban đầu
-        FacilityList.importFile("test/facility_schedule.csv");
         BookingDAO bookingDAO = new BookingDAO("test/BookingInfo.txt");
         bookingDAO.load();
         BookingList bookingList = new BookingList(bookingDAO);
@@ -25,10 +24,10 @@ public class Main {
             int choice = Menu.showMainMenu();
             switch (choice) {
                 case 1:
-                    System.out.print("Enter facility file path: ");
-                    String path = sc.nextLine().trim();
-                    int count = FacilityList.importFile(path);
-                    System.out.println("Imported " + count + " facilities successfully.");
+                    int count = FacilityList.importFile("test/facility_schedule.csv");
+                    System.out.println(count > 0
+                            ? count + " facilities successfully loaded."
+                            : "Failed to import facilities!");
                     break;
 
                 case 2:

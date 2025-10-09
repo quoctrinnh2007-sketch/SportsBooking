@@ -1,7 +1,6 @@
 package collections;
 
 import DataObjects.BookingDAO;
-import DataObjects.FacilityDAO;
 import model.Booking;
 import model.Facility;
 
@@ -9,19 +8,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import utils.Inputter;
 
 public class BookingList {
 
     private BookingDAO bookingDAO;
-    private FacilityDAO facilityDAO;
 
     public BookingList(BookingDAO b) {
         this.bookingDAO = b;
-    }
-
-    public BookingList(BookingDAO b, FacilityDAO f) {
-        this.bookingDAO = b;
-        this.facilityDAO = f;
     }
 
     // -------------------- Helpers --------------------
@@ -44,20 +38,11 @@ public class BookingList {
 // Func 4 - Book a Facility / Service
 // =====================================================
     public void booking(Scanner sc) {
-        String player;
-        while (true) {
-            System.out.print("Enter player name (2-18 chars): ");
-            player = sc.nextLine().trim();
-            if (player.length() >= 2 && player.length() <= 18) {
-                break;
-            }
-            System.out.println("Invalid name! Must be 2–18 characters. Please try again.");
-        }
+        String player = Inputter.getString(sc, "Enter player name (2-18 chars): ", 2, 18);
 
         Facility f;
         while (true) {
-            System.out.print("Enter facility name: ");
-            String fname = sc.nextLine().trim();
+            String fname = Inputter.getString(sc, "Enter facility name: ", 1, 100);
             f = FacilityList.findByIdOrName(fname);
             if (f != null) {
                 break;
@@ -65,43 +50,11 @@ public class BookingList {
             System.out.println("Facility not found. Please enter again.");
         }
 
-        LocalDate date = null;
-        while (true) {
-            System.out.print("Enter booking date (yyyy-MM-dd): ");
-            try {
-                date = LocalDate.parse(sc.nextLine().trim());
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid date format. Please use yyyy-MM-dd.");
-            }
-        }
+        LocalDate date = Inputter.getDate(sc, "Enter booking date (yyyy-MM-dd): ", "yyyy-MM-dd");
+        LocalTime time = Inputter.getTime(sc, "Enter start time (HH:mm): ", "HH:mm");
+        int hours = Inputter.getInt(sc, "Enter number of hours (1–5): ", 1, 5);
 
-        LocalTime time = null;
-        while (true) {
-            System.out.print("Enter start time (HH:mm): ");
-            try {
-                time = LocalTime.parse(sc.nextLine().trim());
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid time format. Please use HH:mm.");
-            }
-        }
-
-        int hours = 0;
-        while (true) {
-            System.out.print("Enter number of hours (1–5): ");
-            try {
-                hours = Integer.parseInt(sc.nextLine().trim());
-                if (hours >= 1 && hours <= 5) {
-                    break;
-                }
-                System.out.println("Duration must be between 1 and 5 hours.");
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number format! Please enter an integer 1–5.");
-            }
-        }
-
-        // Kiểm tra logic đặt sân
+        //  Kiểm tra logic đặt sân
         LocalDateTime reqStart = LocalDateTime.of(date, time);
         LocalDateTime reqEnd = reqStart.plusHours(hours);
         LocalDateTime now = LocalDateTime.now();
@@ -116,7 +69,7 @@ public class BookingList {
             return;
         }
 
-        // Chống trùng lịch
+        // Chống trùng lịch (bỏ qua booking đã hủy)
         for (Booking b : bookingDAO.getAll()) {
             if (b.isCanceled()) {
                 continue;
@@ -124,6 +77,7 @@ public class BookingList {
             if (!b.getFacility().equalsIgnoreCase(f.getName())) {
                 continue;
             }
+
             LocalDateTime s = LocalDateTime.of(b.getDate(), b.getTime());
             LocalDateTime e = s.plusHours(b.getDuration());
             if (reqStart.isBefore(e) && reqEnd.isAfter(s)) {
@@ -132,6 +86,7 @@ public class BookingList {
             }
         }
 
+        // 4) Tạo booking + lưu
         String id = "BK" + System.currentTimeMillis();
         bookingDAO.add(new Booking(id, player, f.getName(), date, time, hours));
         bookingDAO.save();
@@ -142,7 +97,7 @@ public class BookingList {
 
     // =====================================================
     // Func 5 - View Today's Bookings
-    // ➜ Hiển thị booking cho ngày chỉ định; nếu null thì mặc định today. Sort theo time, format như sample.
+    // ➜ Hiển thị booking cho ngày chỉ định; nếu null thì mặc định today. Sort theo time.
     // =====================================================
     public void view(LocalDate dateOrNull) {
         LocalDate target = (dateOrNull == null) ? LocalDate.now() : dateOrNull;
