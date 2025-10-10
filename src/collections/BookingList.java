@@ -39,32 +39,21 @@ public class BookingList {
 // =====================================================
     public void booking(Scanner sc) {
         String player = Inputter.getString(sc, "Enter player name (2-18 chars): ", 2, 18);
-
-        Facility f;
-        while (true) {
-            String fname = Inputter.getString(sc, "Enter facility name: ", 1, 100);
-            f = FacilityList.findByIdOrName(fname);
-            if (f != null) {
-                break;
-            }
-            System.out.println("Facility not found. Please enter again.");
-        }
+        String fname = Inputter.getString(sc, "Enter facility name: ", 1, 100);
 
         LocalDate date = Inputter.getDate(sc, "Enter booking date (yyyy-MM-dd): ", "yyyy-MM-dd");
         LocalTime time = Inputter.getTime(sc, "Enter start time (HH:mm): ", "HH:mm");
         int hours = Inputter.getInt(sc, "Enter number of hours (1–5): ", 1, 5);
 
-        //  Kiểm tra logic đặt sân
         LocalDateTime reqStart = LocalDateTime.of(date, time);
         LocalDateTime reqEnd = reqStart.plusHours(hours);
-        LocalDateTime now = LocalDateTime.now();
-
-        if (reqStart.isBefore(now)) {
+        if (reqStart.isBefore(LocalDateTime.now())) {
             System.out.println("Cannot book a past time.");
             return;
         }
-        if (f.getStart() == null || f.getEnd() == null
-                || reqStart.isBefore(f.getStart()) || reqEnd.isAfter(f.getEnd())) {
+
+        Facility f = FacilityList.findFacilityByDateTime(fname, date, time, hours);
+        if (f == null) {
             System.out.println("Selected time is not within facility availability.");
             return;
         }
@@ -86,7 +75,6 @@ public class BookingList {
             }
         }
 
-        // 4) Tạo booking + lưu
         String id = "BK" + System.currentTimeMillis();
         bookingDAO.add(new Booking(id, player, f.getName(), date, time, hours));
         bookingDAO.save();
@@ -361,7 +349,5 @@ public class BookingList {
         } else {
             System.out.println("Exit program without saving successfully!");
         }
-        System.out.println("Goodbye!");
     }
-
 }

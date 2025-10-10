@@ -8,7 +8,9 @@ import DataObjects.FileManager;
 import model.Facility;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,7 @@ public class FacilityList {
     // Func 1 :
     public static int importFile(String path) {
         facilities.clear();
+        int skip = 0;
         File f = new File(path);
         if (!f.exists()) {
             System.out.println("File not found: " + path);
@@ -38,7 +41,6 @@ public class FacilityList {
         int count = 0;
         try {
             List<String> lines = FileManager.readAllLines(path);
-            java.util.HashSet<String> nameSet = new java.util.HashSet<String>();
 
             for (String line : lines) {
                 if (line == null || line.trim().isEmpty()) {
@@ -59,25 +61,23 @@ public class FacilityList {
                     String name = p[1].trim();
                     String type = p[2].trim();
                     String loc = p[3].trim();
+
                     int cap = Integer.parseInt(p[4].trim());
                     int price = Integer.parseInt(p[5].trim());
+
                     LocalDateTime start = LocalDateTime.parse(p[6].trim(), TS);
                     LocalDateTime end = LocalDateTime.parse(p[7].trim(), TS);
 
-                    String nameKey = name.toLowerCase();
-                    if (cap <= 0 || nameKey.length() == 0 || nameSet.contains(nameKey)) {
-                        continue;
-                    }
-
                     facilities.add(new Facility(id, name, type, loc, cap, price, start, end));
-                    nameSet.add(nameKey);
                     count++;
-                } catch (Exception ignored) {
+                } catch (Exception ex) {
+                    skip++;
                 }
             }
         } catch (Exception e) {
             System.out.println("Failed to import: " + e.getMessage());
         }
+        System.out.println(+skip + " lines skipped.");
         return count;
     }
 
@@ -178,7 +178,29 @@ public class FacilityList {
             if (f.getId().equalsIgnoreCase(k) || f.getName().equalsIgnoreCase(k)) {
                 return f;
             }
+        }
+        return null;
+    }
 
+    public static Facility findFacilityByDateTime(String key,
+            LocalDate date, LocalTime start, int durationHours) {
+
+        LocalDateTime s = LocalDateTime.of(date, start);
+        LocalDateTime e = s.plusHours(durationHours);
+
+        for (Facility f : facilities) {
+            if (!f.getId().equalsIgnoreCase(key) && !f.getName().equalsIgnoreCase(key)) {
+                continue;
+            }
+
+            if (f.getStart() != null && f.getEnd() != null) {
+                // ✅ lọc đúng ngày + trong khung giờ
+                if (f.getStart().toLocalDate().equals(date)
+                        && !s.isBefore(f.getStart())
+                        && !e.isAfter(f.getEnd())) {
+                    return f;
+                }
+            }
         }
         return null;
     }

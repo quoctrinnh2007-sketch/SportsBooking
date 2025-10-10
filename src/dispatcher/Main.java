@@ -79,6 +79,10 @@ public class Main {
                     System.out.println("Goodbye!");
                     running = false;
                     break;
+                    
+                case 11:
+                    
+                    break;
 
                 default:
                     System.out.println("Invalid choice! Please enter 0–10.");
